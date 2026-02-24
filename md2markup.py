@@ -300,7 +300,10 @@ class ConfluenceConverter:
             inner = inner[:-1]
         cells = [c.strip() for c in inner.split('|')]
         sep = '||' if header else '|'
-        return sep + sep.join(cells) + sep
+        # Pad each cell with a single space on each side so that inline
+        # formatting markers (e.g. *bold*) are not directly adjacent to the
+        # cell delimiter, which would prevent Confluence from recognising them.
+        return sep + sep.join(f' {cell} ' for cell in cells) + sep
 
     # ------------------------------------------------------------------
     # Pass 3: Inline code extraction
@@ -386,6 +389,12 @@ class ConfluenceConverter:
         line = self._STRIKE.sub(lambda m: f'-{m.group(1)}-', line)
         # Restore bold placeholders
         line = self._restore_placeholders(line, bold_map)
+        # Confluence requires a space after the closing * of bold/bold-italic
+        # when the next character is a non-space word character; otherwise
+        # Confluence does not recognise the closing marker and renders the
+        # asterisks literally.  Match only a closing * — i.e. preceded by a
+        # non-asterisk, non-space character and followed by a word character.
+        line = re.sub(r'(?<=\S)\*(?=\w)', r'* ', line)
         return line
 
     # ------------------------------------------------------------------
