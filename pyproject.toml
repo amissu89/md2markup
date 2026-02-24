@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "md2markup"
+version = "0.1.0"
+description = "Convert Markdown to Confluence Wiki Markup"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+keywords = ["markdown", "confluence", "wiki", "markup", "converter"]
+
+[project.scripts]
+md2markup = "md2markup:main"
+
+[tool.setuptools]
+py-modules = ["md2markup"]
