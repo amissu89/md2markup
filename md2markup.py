@@ -42,8 +42,11 @@ class ConfluenceConverter:
     # Bold: **text** or __text__
     _BOLD = re.compile(r'(\*{2}|_{2})(.+?)\1')
     # Italic: *text* or _text_  (single, not preceded/followed by same char)
+    # Opening * must not be followed by a space, so that Confluence list
+    # markers ("* item") produced by Pass 2 are never mistaken for italic
+    # openers.
     _ITALIC = re.compile(
-        r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)'
+        r'(?<!\*)\*(?![\s*])(.+?)(?<!\*)\*(?!\*)'
         r'|'
         r'(?<!_)_(?!_)(.+?)(?<!_)_(?!_)'
     )
