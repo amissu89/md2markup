@@ -67,6 +67,14 @@ class TestInlineFormatting(unittest.TestCase):
     def test_inline_code(self):
         self.assertEqual(conv('`code`'), '{{code}}')
 
+    def test_inline_code_with_double_braces(self):
+        # `{{foo}}` → {{&#123;&#123;foo&#125;&#125;}} so Confluence renders {{foo}} in monospace
+        self.assertEqual(conv('`{{foo}}`'), '{{&#123;&#123;foo&#125;&#125;}}')
+
+    def test_inline_code_with_double_braces_and_star(self):
+        # `{{tb_master_*}}` must not trigger Unknown Macro or italic/list issues
+        self.assertEqual(conv('`{{tb_master_*}}`'), '{{&#123;&#123;tb_master_*&#125;&#125;}}')
+
     def test_mixed(self):
         result = conv('**bold** and *italic*')
         self.assertEqual(result, '*bold* and _italic_')
@@ -159,8 +167,8 @@ class TestTable(unittest.TestCase):
     def test_simple_table(self):
         md = '| A | B |\n|---|---|\n| 1 | 2 |'
         result = conv(md)
-        self.assertIn('||A||B||', result)
-        self.assertIn('|1|2|', result)
+        self.assertIn('|| A || B ||', result)
+        self.assertIn('| 1 | 2 |', result)
 
     def test_header_only(self):
         md = '| Col1 | Col2 |\n|------|------|\n| val1 | val2 |'

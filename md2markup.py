@@ -319,12 +319,14 @@ class ConfluenceConverter:
             nonlocal counter
             key = _ph(_PH_IC, counter)
             content = m.group(1)
-            # Confluence parses {{ as a macro start, so braces inside {{...}}
-            # must be escaped as HTML entities to avoid "Unknown macro" errors.
-            # This also works safely inside table cells, unlike {code}...{code}
-            # which is a block-level macro and breaks table layout.
-            if '{' in content or '}' in content:
-                content = content.replace('{', '&#123;').replace('}', '&#125;')
+            # Confluence treats {{ as a macro opener; escape only double-brace
+            # sequences so that e.g. `{{foo}}` becomes {{&#123;&#123;foo&#125;&#125;}}
+            # (monospace-rendered as "{{foo}}") without triggering an Unknown Macro.
+            # Single braces are safe inside {{...}} and must NOT be escaped,
+            # because escaping them as well produces nested entities like
+            # {{&#123;&#123;...&#125;&#125;}} which Confluence still fails to parse.
+            # Escape all braces so Confluence doesn't treat {foo} as a macro
+            content = content.replace('{', '&#123;').replace('}', '&#125;')
             inline_map[key] = '{{' + content + '}}'
             counter += 1
             return key
